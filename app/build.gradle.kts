@@ -145,6 +145,8 @@ dependencies {
    implementation(projects.logging.data)
    implementation(projects.sharedResources)
    implementation(projects.voice.data)
+   implementation(projects.webservices.data)
+   implementation(projects.webservices.ui)
 
    implementation(libs.androidx.activity.compose)
    implementation(libs.androidx.core)

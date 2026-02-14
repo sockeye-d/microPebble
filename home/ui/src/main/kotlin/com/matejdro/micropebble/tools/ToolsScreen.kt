@@ -38,6 +38,7 @@ import com.matejdro.micropebble.navigation.keys.AppstoreSourcesScreenKey
 import com.matejdro.micropebble.navigation.keys.CalendarListScreenKey
 import com.matejdro.micropebble.navigation.keys.DeveloperConnectionScreenKey
 import com.matejdro.micropebble.navigation.keys.OnboardingKey
+import com.matejdro.micropebble.navigation.keys.WebservicesAuthScreenKey
 import com.matejdro.micropebble.ui.components.ErrorAlertDialog
 import com.matejdro.micropebble.ui.components.ProgressErrorSuccessScaffold
 import com.matejdro.micropebble.ui.debugging.FullScreenPreviews
@@ -79,6 +80,7 @@ class ToolsScreen(
                { navigator.navigateTo(DeveloperConnectionScreenKey) },
                { navigator.navigateTo(CalendarListScreenKey) },
                { navigator.navigateTo(AppstoreSourcesScreenKey) },
+               { navigator.navigateTo(WebservicesAuthScreenKey) },
                viewModel::getLogs,
                viewModel::resetLog,
                viewModel::changeMusicAlwaysPaused
@@ -96,6 +98,7 @@ private fun ToolsScreenContent(
    openDevConnection: () -> Unit,
    openCalendarSettings: () -> Unit,
    openAppstoreSources: () -> Unit,
+   openWebservices: () -> Unit,
    startLogSaving: () -> Unit,
    notifyLogIntentSent: () -> Unit,
    changeMusicAlwaysPaused: (newValue: Boolean) -> Unit,
@@ -155,6 +158,10 @@ private fun ToolsScreenContent(
             ToolButton(openAppstoreSources, R.drawable.appstore_sources, sharedR.string.manage_appstore_sources)
          }
 
+         item {
+            ToolButton(openWebservices, R.drawable.webservices_auth, sharedR.string.authenticate_webservices)
+         }
+
          item(span = { GridItemSpan(maxLineSpan) }) {
             SwitchPreference(
                state.alwaysSendPausedMusic,
@@ -203,6 +210,7 @@ internal fun ToolsScreenPreview() {
          openDevConnection = {},
          openCalendarSettings = {},
          openAppstoreSources = {},
+         openWebservices = {},
          startLogSaving = {},
          notifyLogIntentSent = {},
          changeMusicAlwaysPaused = {},
