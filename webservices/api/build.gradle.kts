@@ -1,5 +1,6 @@
 plugins {
    pureKotlinModule
+   alias(libs.plugins.serialization)
 }
 
 dependencies {
@@ -9,4 +10,6 @@ dependencies {
 
    implementation(libs.kotlin.serialization.core)
    implementation(projects.appstore.api)
+
+   compileOnly(libs.androidx.compose.runtime.annotation)
 }

@@ -8,20 +8,21 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import java.io.InputStream
 import java.io.OutputStream
+import kotlin.uuid.Uuid
 
-internal object AuthenticationTokenSerializer : Serializer<WebservicesToken?> {
+internal object AuthenticationTokenSerializer : Serializer<Map<Uuid, WebservicesToken>> {
    private val json = Json { ignoreUnknownKeys = true }
-   override val defaultValue = null as WebservicesToken?
+   override val defaultValue = emptyMap<Uuid, WebservicesToken>()
 
    override suspend fun readFrom(input: InputStream) =
       try {
-         json.decodeFromString<WebservicesToken?>(input.readBytes().decodeToString())
+         json.decodeFromString<Map<Uuid, WebservicesToken>>(input.readBytes().decodeToString())
       } catch (e: SerializationException) {
          Log.e("AppstoreSourcesSerializer.readFrom", "Failed to load appstore sources", e)
          defaultValue
       }
 
-   override suspend fun writeTo(t: WebservicesToken?, output: OutputStream) = withIO {
+   override suspend fun writeTo(t: Map<Uuid, WebservicesToken>, output: OutputStream) = withIO {
       output.write(json.encodeToString(t).encodeToByteArray())
    }
 }

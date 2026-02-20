@@ -1,6 +1,7 @@
 plugins {
    androidLibraryModule
    di
+   alias(libs.plugins.serialization)
 }
 
 android {
@@ -19,6 +20,7 @@ dependencies {
    api(libs.dispatch)
 
    implementation(projects.common)
+   implementation(projects.appstore.api)
    implementation(libs.ktor.http)
    implementation(libs.ktor.serialization)
    implementation(libs.ktor.utils)

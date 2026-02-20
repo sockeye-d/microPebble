@@ -8,15 +8,15 @@ plugins {
 }
 
 android {
-    namespace = "com.matejdro.micropebble.webservices.ui"
+   namespace = "com.matejdro.micropebble.webservices.ui"
 
-    buildFeatures {
-        androidResources = true
-    }
+   buildFeatures {
+      androidResources = true
+   }
 }
 
 dependencies {
-    api(projects.webservices.api)
+   api(projects.webservices.api)
    api(projects.common)
    api(libs.kotlinova.navigation)
    api(libs.kotlin.coroutines)
@@ -24,6 +24,9 @@ dependencies {
    implementation(projects.commonCompose)
    implementation(projects.commonNavigation)
    implementation(projects.sharedResources)
+   implementation(projects.appstore.api)
+   implementation(libs.kotlin.coroutines)
+   implementation(libs.composeWebview)
 
-    testImplementation(projects.common.test)
+   testImplementation(projects.common.test)
 }

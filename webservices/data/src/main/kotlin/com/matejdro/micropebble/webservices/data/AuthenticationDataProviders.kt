@@ -11,14 +11,15 @@ import dev.zacsweers.metro.ContributesTo
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
 import dispatch.core.IOCoroutineScope
+import kotlin.uuid.Uuid
 
 @ContributesTo(AppScope::class)
 interface AuthenticationDataProviders {
    @Provides
    @SingleIn(AppScope::class)
-   fun provideAuthTokenStore(context: Context, ioCoroutineScope: IOCoroutineScope): DataStore<WebservicesToken?> {
+   fun provideAuthTokenStore(context: Context, ioCoroutineScope: IOCoroutineScope): DataStore<Map<Uuid, WebservicesToken>> {
       return DataStoreFactory.create(scope = ioCoroutineScope, serializer = AuthenticationTokenSerializer) {
-         context.dataStoreFile("appInstallSources.json")
+         context.dataStoreFile("webservicesAuth.json")
       }
    }
 }

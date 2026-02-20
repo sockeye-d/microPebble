@@ -80,7 +80,7 @@ class ToolsScreen(
                { navigator.navigateTo(DeveloperConnectionScreenKey) },
                { navigator.navigateTo(CalendarListScreenKey) },
                { navigator.navigateTo(AppstoreSourcesScreenKey) },
-               { navigator.navigateTo(WebservicesAuthScreenKey) },
+               { navigator.navigateTo(WebservicesAuthScreenKey()) },
                viewModel::getLogs,
                viewModel::resetLog,
                viewModel::changeMusicAlwaysPaused
