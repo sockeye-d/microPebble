@@ -24,6 +24,6 @@ interface WebservicesClient {
    suspend fun checkToken(token: WebservicesToken): Boolean
    suspend fun authenticate(token: WebservicesToken): Boolean
    suspend fun deauthenticate(token: WebservicesToken)
-   suspend fun parseTokenUri(uri: String?): ParsedWebservicesToken
+   suspend fun parseTokenUri(uri: String): ParsedWebservicesToken
    suspend fun fetchLocker(sourceId: Uuid): WebserviceResult<WebserviceLocker>
 }

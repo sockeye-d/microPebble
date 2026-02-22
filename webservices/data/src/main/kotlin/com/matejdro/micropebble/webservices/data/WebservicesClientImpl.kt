@@ -109,9 +109,9 @@ class WebservicesClientImpl(
       }
    }
 
-   override suspend fun parseTokenUri(uri: String?): ParsedWebservicesToken {
+   override suspend fun parseTokenUri(uri: String): ParsedWebservicesToken {
       val url = Uri.parse(uri)!!
-      val bootUrl = "${url.scheme}://${url.authority}"
+      val bootUrl = "${url.scheme!!}://${url.authority!!}"
       val (appstore, _, _) = getHttp().get("$bootUrl/api/cobble").body<CobbleApi>()
       return ParsedWebservicesToken(
          sourceId = sources.find { it.url == appstore.base }?.id, token = url.getQueryParameter("access_token"), bootUrl = bootUrl

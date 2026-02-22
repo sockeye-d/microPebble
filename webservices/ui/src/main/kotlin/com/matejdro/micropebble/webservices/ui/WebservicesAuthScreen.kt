@@ -74,6 +74,11 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.Uuid
 
 @Stable
+fun interface CheckTokenFun {
+   suspend operator fun invoke(token: WebservicesToken): Boolean
+}
+
+@Stable
 @InjectNavigationScreen
 @ContributesScreenBinding
 class WebservicesAuthScreen(
@@ -106,7 +111,7 @@ private fun WebservicesAuthScreenContent(
    sources: List<AppstoreSource>?,
    authenticate: (WebservicesToken) -> Unit,
    deauthenticate: (WebservicesToken) -> Unit,
-   checkToken: suspend (WebservicesToken) -> Boolean,
+   checkToken: CheckTokenFun,
 ) {
    var setupDialogData: ParsedWebservicesToken? by remember { mutableStateOf(null) }
    var setupDialogShown by remember { mutableStateOf(false) }
@@ -242,14 +247,14 @@ fun ManualSetupDialog(
    sources: List<AppstoreSource>,
    onDismissed: () -> Unit,
    onSubmitted: (WebservicesToken) -> Unit,
-   checkToken: suspend (WebservicesToken) -> Boolean,
+   checkToken: CheckTokenFun,
    modifier: Modifier = Modifier,
 ) {
    var appstoreSource by remember { mutableStateOf(initialValues?.sourceId?.let { source -> sources.find { it.id == source } }) }
-   var bootUrl by remember { mutableStateOf(initialValues?.bootUrl ?: "") }
+   var bootUrl by remember { mutableStateOf(initialValues?.bootUrl.orEmpty()) }
    var apiToken by remember {
       mutableStateOf(
-         initialValues?.token ?: ""
+         initialValues?.token.orEmpty()
       )
    }
    val token by remember {
@@ -289,7 +294,7 @@ fun ManualSetupDialog(
       text = {
          Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             BasicExposedDropdownMenuBox(
-               textFieldValue = appstoreSource?.name ?: "",
+               textFieldValue = appstoreSource?.name.orEmpty(),
                modifier = Modifier.fillMaxWidth(),
                textFieldLabel = { Text(stringResource(R.string.appstore_source)) },
             ) {
