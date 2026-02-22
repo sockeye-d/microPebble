@@ -93,11 +93,11 @@ class TranscriptionProviderImpl(
       val speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context)
       val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
       intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-      intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, RecognizerIntent.EXTRA_MAX_RESULTS)
+      intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
       intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE, readPipe)
       intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_CHANNEL_COUNT, 1)
       intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_ENCODING, AudioFormat.ENCODING_PCM_16BIT)
-      intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_SAMPLING_RATE, speexInfo.sampleRate)
+      intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_SAMPLING_RATE, speexInfo.sampleRate.toInt())
 
       speechRecognizer.setRecognitionListener(RecognitionListenerImpl(finishedReceiver))
       speechRecognizer.startListening(intent)

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="voice_recognition">Voice recognition</string>
+    <string name="voice_recognition_description">Ready for voice transcription from the watch. This notification is a requirement
+        from the Android OS. Feel free to disable it.
+    </string>
+</resources>
