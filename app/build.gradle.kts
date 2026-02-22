@@ -175,4 +175,5 @@ dependencies {
    runtimeOnly(libs.ktor.okhttp)
 
    keeperR8(libs.androidx.r8)
+  implementation(project(":webservices:api"))
 }

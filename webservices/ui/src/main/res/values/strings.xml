@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="webservices_not_authorized">Webservices are unauthorized</string>
-    <string name="setup_dialog">Setup webservices</string>
+    <string name="manual_setup">Manual setup</string>
     <string name="authorize_rebble">Authorize Rebble Web Services</string>
     <string name="api_url">Web API URL</string>
     <string name="api_token">API token</string>

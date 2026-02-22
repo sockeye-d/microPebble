@@ -10,12 +10,12 @@ import com.matejdro.micropebble.webservices.api.WebservicesToken
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import si.inova.kotlinova.core.outcome.CauseException
 import si.inova.kotlinova.core.outcome.CoroutineResourceManager
 import si.inova.kotlinova.core.outcome.Outcome
 import si.inova.kotlinova.navigation.services.ContributesScopedService
 import si.inova.kotlinova.navigation.services.SingleScreenViewModel
-import kotlin.uuid.Uuid
 
 class InvalidTokenException : CauseException(message = "Token is invalid", isProgrammersFault = false)
 
@@ -26,20 +26,25 @@ class WebservicesAuthViewModel(
    private val client: WebservicesClient,
    private val resources: CoroutineResourceManager,
    private val actionLogger: ActionLogger,
-   private val sourceService: AppstoreSourceService,
+   sourceService: AppstoreSourceService,
 ) : SingleScreenViewModel<WebservicesAuthScreenKey>(resources.scope) {
-   private val _currentAuthToken: MutableStateFlow<Outcome<Map<Uuid, WebservicesToken?>>> = MutableStateFlow(Outcome.Progress())
    val authToken = client.tokens
    val sources = sourceService.sources
-   val authErrors = MutableStateFlow<CauseException?>(null)
 
    private val _startAuthToken = MutableStateFlow<Outcome<ParsedWebservicesToken?>>(Outcome.Progress())
    val startAuthToken: StateFlow<Outcome<ParsedWebservicesToken?>> = _startAuthToken
 
-   fun authenticate(token: WebservicesToken) = resources.launchResourceControlTask(_currentAuthToken) {
+   fun authenticate(token: WebservicesToken) {
       actionLogger.logAction { "WebservicesAuthViewModel.authenticate($token)" }
-      if (!client.authenticate(token)) {
-         authErrors.value = InvalidTokenException()
+      resources.scope.launch {
+         client.authenticate(token)
+      }
+   }
+
+   fun deauthenticate(token: WebservicesToken) {
+      actionLogger.logAction { "WebservicesAuthViewModel.deauthenticate($token)" }
+      resources.scope.launch {
+         client.deauthenticate(token)
       }
    }
 
