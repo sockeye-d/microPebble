@@ -101,7 +101,7 @@ class AppUpdaterFinderImpl(
             setContentText(text)
          }
       )
-      setContentTitle(context.resources.getQuantityString(R.plurals.apps_have_updates, apps.size))
+      setContentTitle(context.resources.getQuantityString(R.plurals.apps_have_updates, apps.size, apps.size))
    }
 }
 

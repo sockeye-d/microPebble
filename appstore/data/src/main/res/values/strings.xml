@@ -6,7 +6,7 @@
     <plurals name="apps_have_updates">
         <item quantity="zero">No apps have updates</item>
         <item quantity="one">%d app has updates</item>
-        <item quantity="many">%d apps have updates</item>
+        <item quantity="other">%d apps have updates</item>
     </plurals>
     <string name="app_has_updates">%1$s has updates</string>
 </resources>
