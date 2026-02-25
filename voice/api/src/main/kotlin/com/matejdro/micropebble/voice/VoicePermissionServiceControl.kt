@@ -1,4 +1,4 @@
-package com.materjdro.micropebble.voice
+package com.matejdro.micropebble.voice
 
 import kotlinx.coroutines.flow.Flow
 

@@ -1,4 +1,4 @@
-package com.materjdro.micropebble.voice
+package com.matejdro.micropebble.voice
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -18,6 +18,7 @@ import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.flow.MutableStateFlow
 import si.inova.kotlinova.core.logging.logcat
 import com.matejdro.micropebble.sharedresources.R as sharedR
+
 /**
  * A dummy service that does nothing but run in foreground.
  * This is required for having background microphone permission in Android 11+

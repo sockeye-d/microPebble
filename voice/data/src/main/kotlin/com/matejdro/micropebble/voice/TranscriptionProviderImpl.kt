@@ -1,4 +1,4 @@
-package com.materjdro.micropebble.voice
+package com.matejdro.micropebble.voice
 
 import android.content.Context
 import android.content.Intent

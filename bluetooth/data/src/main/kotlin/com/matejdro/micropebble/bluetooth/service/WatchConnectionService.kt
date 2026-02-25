@@ -10,7 +10,7 @@ import com.matejdro.micropebble.bluetooth.R
 import com.matejdro.micropebble.common.di.ServiceKey
 import com.matejdro.micropebble.common.notifications.MainActivityProvider
 import com.matejdro.micropebble.common.notifications.NotificationKeys
-import com.materjdro.micropebble.voice.VoicePermissionServiceControl
+import com.matejdro.micropebble.voice.VoicePermissionServiceControl
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject

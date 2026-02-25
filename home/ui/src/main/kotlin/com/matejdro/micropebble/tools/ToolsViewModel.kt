@@ -6,7 +6,7 @@ import androidx.compose.runtime.Stable
 import androidx.core.content.FileProvider
 import com.matejdro.micropebble.common.logging.ActionLogger
 import com.matejdro.micropebble.logging.FileLoggingController
-import com.materjdro.micropebble.voice.VoicePermissionServiceControl
+import com.matejdro.micropebble.voice.VoicePermissionServiceControl
 import dev.zacsweers.metro.Inject
 import dispatch.core.withDefault
 import io.rebble.libpebblecommon.connection.LibPebble

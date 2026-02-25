@@ -3,7 +3,7 @@
 >
 
     <application>
-        <service android:name="com.materjdro.micropebble.voice.VoicePermissionService"
+        <service android:name="com.matejdro.micropebble.voice.VoicePermissionService"
                  android:foregroundServiceType="microphone"
                  android:exported="false" />
     </application>
