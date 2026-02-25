@@ -3,24 +3,25 @@ package com.matejdro.micropebble.bluetooth.service
 import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
-import android.companion.CompanionDeviceManager
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
-import androidx.core.content.getSystemService
+import com.matejdro.micropebble.bluetooth.R
 import com.matejdro.micropebble.common.di.ServiceKey
 import com.matejdro.micropebble.common.notifications.MainActivityProvider
 import com.matejdro.micropebble.common.notifications.NotificationKeys
+import com.materjdro.micropebble.voice.VoicePermissionServiceControl
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import dispatch.core.MainImmediateCoroutineScope
-import dispatch.core.withDefault
 import io.rebble.libpebblecommon.connection.CommonConnectedDevice
 import io.rebble.libpebblecommon.connection.ConnectingPebbleDevice
 import io.rebble.libpebblecommon.connection.Watches
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import com.matejdro.micropebble.sharedresources.R as sharedR
 
@@ -35,16 +36,15 @@ class WatchConnectionService(
    private val watches: Watches,
    private val mainActivityProvider: MainActivityProvider,
    private val coroutineScope: MainImmediateCoroutineScope,
+   private val voicePermissionServiceControl: VoicePermissionServiceControl,
 ) : Service() {
    private var finishTimer: Job? = null
-
-   private var lastConnectingDevices: List<String> = emptyList()
 
    override fun onCreate() {
       super.onCreate()
 
       coroutineScope.launch {
-         watches.watches.collect { deviceList ->
+         combine(watches.watches, voicePermissionServiceControl.voiceServiceActive) { deviceList, voiceActive ->
             if (deviceList.isEmpty()) {
                startFinishTimer()
             } else {
@@ -57,7 +57,7 @@ class WatchConnectionService(
             if (connectingDevices.isEmpty()) {
                // Stop the service when we have no watches to connect to
                stopSelf()
-               return@collect
+               return@combine
             } else if (deviceList.any { it is ConnectingPebbleDevice }) {
                startForeground(
                   NotificationKeys.ID_FOREGROUND_CONNECTING,
@@ -75,33 +75,27 @@ class WatchConnectionService(
                      )
                      .build()
                )
+            } else if (!voiceActive && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+               startForeground(
+                  NotificationKeys.ID_FOREGROUND_CONNECTING,
+                  Notification.Builder(this@WatchConnectionService, NotificationKeys.CHANNEL_NO_VOICE)
+                     .setContentTitle(getString(R.string.voice_service_not_active))
+                     .setContentText(getString(R.string.voice_service_not_active_description))
+                     .setSmallIcon(sharedR.drawable.ic_mic)
+                     .setContentIntent(
+                        PendingIntent.getActivity(
+                           this@WatchConnectionService,
+                           0,
+                           mainActivityProvider.getMainActivityIntent(),
+                           PendingIntent.FLAG_IMMUTABLE
+                        )
+                     )
+                     .build()
+               )
             } else {
                stopForeground(STOP_FOREGROUND_REMOVE)
             }
-
-            triggerCompanionDeviceManager(connectingDevices)
-         }
-      }
-   }
-
-   private suspend fun triggerCompanionDeviceManager(connectingDevices: List<String>) {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && lastConnectingDevices != connectingDevices) {
-         lastConnectingDevices = connectingDevices
-         // To get background microphone permission, we must listen for the
-         // associated device connection and start the service immediately upon connection
-         val companionDeviceManager = getSystemService<CompanionDeviceManager>()!!
-         val myAssociations = withDefault { companionDeviceManager.myAssociations }
-         for (associatedDevice in myAssociations) {
-            val mac = associatedDevice.deviceMacAddress!!.toString().uppercase()
-
-            if (connectingDevices.contains(mac)) {
-               @Suppress("DEPRECATION") // This is just easier
-               companionDeviceManager.startObservingDevicePresence(mac)
-            } else {
-               @Suppress("DEPRECATION") // This is just easier
-               companionDeviceManager.stopObservingDevicePresence(mac)
-            }
-         }
+         }.collect()
       }
    }
 

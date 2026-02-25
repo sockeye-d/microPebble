@@ -1,15 +1,20 @@
 package com.materjdro.micropebble.voice
 
+import android.content.Context
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.SpeechRecognizer
+import com.matejdro.micropebble.voice.data.R
 import io.rebble.libpebblecommon.voice.TranscriptionResult
 import io.rebble.libpebblecommon.voice.TranscriptionWord
 import kotlinx.coroutines.CompletableDeferred
 import si.inova.kotlinova.core.logging.logcat
 import si.inova.kotlinova.core.state.toMap
 
-class RecognitionListenerImpl(private val finishedReceiver: CompletableDeferred<TranscriptionResult>) : RecognitionListener {
+class RecognitionListenerImpl(
+   private val context: Context,
+   private val finishedReceiver: CompletableDeferred<TranscriptionResult>,
+) : RecognitionListener {
    private var partialText: String? = null
    private var partialConfidence: Float? = null
 
@@ -28,7 +33,11 @@ class RecognitionListenerImpl(private val finishedReceiver: CompletableDeferred<
 
             SpeechRecognizer.ERROR_NO_MATCH -> TranscriptionResult.Failed
 
-            SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> TranscriptionResult.Disabled
+            SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS ->
+               TranscriptionResult.Success(
+                  context.getString(R.string.error_voice_not_enabled_short)
+                     .split(" ").map { TranscriptionWord(it, 1f) }
+               )
 
             else -> TranscriptionResult.Error("Unknown error: $error")
          }

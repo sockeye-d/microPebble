@@ -6,6 +6,7 @@ import androidx.compose.runtime.Stable
 import androidx.core.content.FileProvider
 import com.matejdro.micropebble.common.logging.ActionLogger
 import com.matejdro.micropebble.logging.FileLoggingController
+import com.materjdro.micropebble.voice.VoicePermissionServiceControl
 import dev.zacsweers.metro.Inject
 import dispatch.core.withDefault
 import io.rebble.libpebblecommon.connection.LibPebble
@@ -31,6 +32,7 @@ class ToolsViewModel(
    private val context: Context,
    private val fileLoggingController: FileLoggingController,
    private val libPebble: LibPebble,
+   private val voiceServiceControl: VoicePermissionServiceControl,
 ) : SingleScreenViewModel<ToolsScreenKey>(resources.scope) {
    private val _uiState = MutableStateFlow<Outcome<ToolsState>>(Outcome.Progress())
    val uiState: StateFlow<Outcome<ToolsState>>
@@ -109,6 +111,12 @@ class ToolsViewModel(
    fun resetLog() {
       actionLogger.logAction { "ToolsViewModel.resetLog()" }
       _logSave.value = Outcome.Success(null)
+   }
+
+   fun startVoice() {
+      actionLogger.logAction { "ToolsViewModel.startVoice()" }
+
+      voiceServiceControl.start()
    }
 }
 

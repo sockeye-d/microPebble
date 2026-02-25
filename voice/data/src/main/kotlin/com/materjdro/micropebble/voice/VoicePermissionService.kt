@@ -11,10 +11,13 @@ import androidx.core.app.NotificationCompat
 import com.matejdro.micropebble.common.di.ServiceKey
 import com.matejdro.micropebble.voice.data.R
 import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
-
+import kotlinx.coroutines.flow.MutableStateFlow
+import si.inova.kotlinova.core.logging.logcat
+import com.matejdro.micropebble.sharedresources.R as sharedR
 /**
  * A dummy service that does nothing but run in foreground.
  * This is required for having background microphone permission in Android 11+
@@ -22,21 +25,33 @@ import dev.zacsweers.metro.SingleIn
 @ContributesIntoMap(AppScope::class)
 @ServiceKey(VoicePermissionService::class)
 @Inject
-class VoicePermissionService : Service() {
+class VoicePermissionService(
+   private val serviceController: VoicePermissionServiceControlImpl,
+) : Service() {
    override fun onCreate() {
       super.onCreate()
 
+      logcat { "Voice service created" }
       createChannel()
 
       startForeground(
          NOTIFICATION_ID,
          NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_mic)
+            .setSmallIcon(sharedR.drawable.ic_mic)
             .setContentTitle(getString(R.string.voice_recognition))
             .setContentText(getString(R.string.voice_recognition_description))
             .build(),
          ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
       )
+
+      logcat { "Foreground started" }
+      serviceController.voiceServiceActive.value = true
+   }
+
+   override fun onDestroy() {
+      logcat { "Foreground destroyed" }
+      serviceController.voiceServiceActive.value = false
+      super.onDestroy()
    }
 
    override fun onBind(intent: Intent?): IBinder? {
@@ -56,15 +71,14 @@ class VoicePermissionService : Service() {
 
 @Inject
 @SingleIn(AppScope::class)
-class VoicePermissionServiceControl(
+@ContributesBinding(AppScope::class)
+class VoicePermissionServiceControlImpl(
    private val context: Context,
-) {
-   fun start() {
-      context.startForegroundService(Intent(context, VoicePermissionService::class.java))
-   }
+) : VoicePermissionServiceControl {
+   override val voiceServiceActive = MutableStateFlow<Boolean>(false)
 
-   fun stop() {
-      context.stopService(Intent(context, VoicePermissionService::class.java))
+   override fun start() {
+      context.startForegroundService(Intent(context, VoicePermissionService::class.java))
    }
 }
 

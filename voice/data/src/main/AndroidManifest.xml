@@ -1,22 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools">
+>
 
     <application>
         <service android:name="com.materjdro.micropebble.voice.VoicePermissionService"
                  android:foregroundServiceType="microphone"
                  android:exported="false" />
-
-        <service
-            android:name="com.materjdro.micropebble.voice.CompanionDeviceListenerService"
-            android:exported="true"
-            android:permission="android.permission.BIND_COMPANION_DEVICE_SERVICE"
-            tools:targetApi="33">
-            <intent-filter>
-                <action android:name="android.companion.CompanionDeviceService" />
-            </intent-filter>
-        </service>
-
     </application>
 
 </manifest>

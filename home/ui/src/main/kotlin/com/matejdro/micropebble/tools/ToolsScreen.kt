@@ -1,7 +1,10 @@
 package com.matejdro.micropebble.tools
 
+import android.Manifest
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -33,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.airbnb.android.showkase.annotation.ShowkaseComposable
+import com.google.accompanist.permissions.rememberPermissionState
 import com.matejdro.micropebble.home.ui.R
 import com.matejdro.micropebble.navigation.keys.AppstoreSourcesScreenKey
 import com.matejdro.micropebble.navigation.keys.CalendarListScreenKey
@@ -65,6 +69,15 @@ class ToolsScreen(
       val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
       val logSaveStatus = viewModel.logSave.collectAsStateWithLifecycleAndBlinkingPrevention().value
 
+      val context = LocalContext.current
+      val voicePermission = rememberPermissionState(Manifest.permission.RECORD_AUDIO) { granted ->
+         if (granted) {
+            viewModel.startVoice()
+         } else {
+            Toast.makeText(context, context.getString(R.string.permission_denied), Toast.LENGTH_LONG).show()
+         }
+      }
+
       Surface {
          ProgressErrorSuccessScaffold(
             uiState,
@@ -81,7 +94,8 @@ class ToolsScreen(
                { navigator.navigateTo(AppstoreSourcesScreenKey) },
                viewModel::getLogs,
                viewModel::resetLog,
-               viewModel::changeMusicAlwaysPaused
+               { voicePermission.launchPermissionRequest() },
+               viewModel::changeMusicAlwaysPaused,
             )
          }
       }
@@ -98,6 +112,7 @@ private fun ToolsScreenContent(
    openAppstoreSources: () -> Unit,
    startLogSaving: () -> Unit,
    notifyLogIntentSent: () -> Unit,
+   startVoiceService: () -> Unit,
    changeMusicAlwaysPaused: (newValue: Boolean) -> Unit,
 ) {
    CompositionLocalProvider(LocalPreferenceTheme provides preferenceTheme()) {
@@ -155,6 +170,12 @@ private fun ToolsScreenContent(
             ToolButton(openAppstoreSources, R.drawable.appstore_sources, sharedR.string.manage_appstore_sources)
          }
 
+         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            item {
+               ToolButton(startVoiceService, sharedR.drawable.ic_mic, R.string.enable_voice)
+            }
+         }
+
          item(span = { GridItemSpan(maxLineSpan) }) {
             SwitchPreference(
                state.alwaysSendPausedMusic,
@@ -206,6 +227,7 @@ internal fun ToolsScreenPreview() {
          startLogSaving = {},
          notifyLogIntentSent = {},
          changeMusicAlwaysPaused = {},
+         startVoiceService = {},
       )
    }
 }

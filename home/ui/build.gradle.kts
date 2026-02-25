@@ -18,6 +18,7 @@ dependencies {
    api(projects.notification.api)
    api(projects.common)
    api(projects.logging.api)
+   api(projects.voice.api)
    api(libs.androidx.core)
    api(libs.kotlinova.core)
    api(libs.kotlinova.navigation)

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="voice_service_not_active">Voice service not active</string>
+    <string name="voice_service_not_active_description">Voice recognition will not work. Tap on \'Enable Voice\' button in the
+        Tools section
+    </string>
+</resources>

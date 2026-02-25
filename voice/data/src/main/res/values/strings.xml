@@ -4,4 +4,5 @@
     <string name="voice_recognition_description">Ready for voice transcription from the watch. This notification is a requirement
         from the Android OS. Feel free to disable it.
     </string>
+    <string name="error_voice_not_enabled_short">Error: Press \'Enable voice\' in the phone app in Tools</string>
 </resources>

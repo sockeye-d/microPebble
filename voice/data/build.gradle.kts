@@ -12,10 +12,12 @@ android {
 
 dependencies {
    api(projects.commonAndroid)
+   api(projects.voice.api)
    api(libs.androidx.core)
    api(libs.kotlinova.core)
    api(libs.libpebble3)
    api(libs.kotlin.coroutines)
+   implementation(projects.sharedResources)
    implementation(libs.speex)
    implementation(libs.androidx.annotation)
 }

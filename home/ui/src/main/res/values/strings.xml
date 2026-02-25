@@ -32,4 +32,6 @@
     <string name="voice_permission_title">Voice recording</string>
     <string name="voice_permission_description">Needed for the voice recognition from the watch</string>
     <string name="calendar">Calendar</string>
+    <string name="enable_voice">Enable voice</string>
+    <string name="permission_denied">Permission denied</string>
 </resources>

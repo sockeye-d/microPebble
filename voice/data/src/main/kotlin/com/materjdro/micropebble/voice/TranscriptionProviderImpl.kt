@@ -99,7 +99,7 @@ class TranscriptionProviderImpl(
       intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_ENCODING, AudioFormat.ENCODING_PCM_16BIT)
       intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_SAMPLING_RATE, speexInfo.sampleRate.toInt())
 
-      speechRecognizer.setRecognitionListener(RecognitionListenerImpl(finishedReceiver))
+      speechRecognizer.setRecognitionListener(RecognitionListenerImpl(context, finishedReceiver))
       speechRecognizer.startListening(intent)
       speechRecognizer
    }
