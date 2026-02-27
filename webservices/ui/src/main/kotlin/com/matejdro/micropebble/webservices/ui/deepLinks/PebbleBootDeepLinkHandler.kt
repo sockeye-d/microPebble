@@ -29,12 +29,13 @@ private data class PebbleBootNavigationInstruction(val screen: ScreenKey) : Navi
 @ContributesIntoSet(OuterNavigationScope::class)
 @Inject
 class PebbleBootDeepLinkHandler : DeepLinkHandler {
-   override fun handleDeepLink(uri: Uri, startup: Boolean) = uri.matchDeepLink("pebble://custom-boot-config-url/{args}") { uri ->
-      val key = WebservicesAuthScreenKey(
-         // Fall back to the undecoded URI if decoding fails.
-         runCatching { URLDecoder.decode(uri["args"], Charset.defaultCharset())!! }.getOrElse { uri["args"] },
-         Uuid.random()
-      )
-      return PebbleBootNavigationInstruction(key)
-   }
+   override fun handleDeepLink(uri: Uri, startup: Boolean) =
+      uri.matchDeepLink("pebble://custom-boot-config-url/{args}") { params ->
+         val key = WebservicesAuthScreenKey(
+            // Fall back to the undecoded URI if decoding fails.
+            runCatching { URLDecoder.decode(params["args"], Charset.defaultCharset().name())!! }.getOrElse { params["args"] },
+            Uuid.random()
+         )
+         return PebbleBootNavigationInstruction(key)
+      }
 }

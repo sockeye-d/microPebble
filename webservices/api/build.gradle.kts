@@ -6,6 +6,7 @@ plugins {
 dependencies {
    api(libs.kotlin.coroutines)
    api(projects.appstore.api)
+   api(libs.kotlinova.core)
 
    implementation(libs.kotlin.serialization.core)
 

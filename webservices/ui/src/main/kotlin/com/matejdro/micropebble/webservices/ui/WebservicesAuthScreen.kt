@@ -104,7 +104,7 @@ class WebservicesAuthScreen(
 private fun WebservicesAuthScreenContent(
    tokens: Map<Uuid, WebservicesToken>,
    initialToken: Outcome<ParsedWebservicesToken?>,
-   token: Outcome<WebservicesToken>,
+   potentialToken: Outcome<WebservicesToken>,
    sources: List<AppstoreSource>?,
    authenticate: (WebservicesToken) -> Unit,
    deauthenticate: (WebservicesToken) -> Unit,
@@ -222,7 +222,7 @@ private fun WebservicesAuthScreenContent(
             tokens,
             setupDialogData,
             sources,
-            token,
+            potentialToken,
             onDismissed = { setupDialogShown = false },
             onSubmitted = {
                setupDialogShown = false
