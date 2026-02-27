@@ -31,6 +31,8 @@ class WebservicesAuthViewModel(
    val authToken = client.tokens
    val sources = sourceService.sources
 
+   private val _token = MutableStateFlow<Outcome<WebservicesToken>>(Outcome.Error(InvalidTokenException()))
+   val token: StateFlow<Outcome<WebservicesToken>> = _token
    private val _startAuthToken = MutableStateFlow<Outcome<ParsedWebservicesToken?>>(Outcome.Progress())
    val startAuthToken: StateFlow<Outcome<ParsedWebservicesToken?>> = _startAuthToken
 
@@ -48,9 +50,13 @@ class WebservicesAuthViewModel(
       }
    }
 
-   suspend fun canAuthenticate(token: WebservicesToken): Boolean {
+   fun makeToken(token: WebservicesToken) = resources.launchResourceControlTask(_token) {
       actionLogger.logAction { "WebservicesAuthViewModel.canAuthenticate($token)" }
-      return client.checkToken(token)
+      if (client.checkToken(token)) {
+         emit(Outcome.Success(token))
+      } else {
+         emit(Outcome.Error(InvalidTokenException()))
+      }
    }
 
    fun loadFromBootUrl() {

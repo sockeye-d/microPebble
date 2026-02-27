@@ -146,6 +146,7 @@ dependencies {
    implementation(projects.sharedResources)
    implementation(projects.voice.api)
    implementation(projects.voice.data)
+   implementation(projects.webservices.api)
    implementation(projects.webservices.data)
    implementation(projects.webservices.ui)
 
@@ -175,5 +176,4 @@ dependencies {
    runtimeOnly(libs.ktor.okhttp)
 
    keeperR8(libs.androidx.r8)
-   implementation(projects.webservices.api)
 }

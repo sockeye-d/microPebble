@@ -38,7 +38,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
@@ -63,7 +62,6 @@ import com.matejdro.micropebble.webservices.api.ParsedWebservicesToken
 import com.matejdro.micropebble.webservices.api.WebservicesToken
 import com.matejdro.micropebble.webservices.ui.common.NotAuthorizedDisplay
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.transformLatest
 import si.inova.kotlinova.compose.components.itemsWithDivider
 import si.inova.kotlinova.compose.flow.collectAsStateWithLifecycleAndBlinkingPrevention
 import si.inova.kotlinova.core.outcome.Outcome
@@ -72,11 +70,6 @@ import si.inova.kotlinova.navigation.screens.InjectNavigationScreen
 import si.inova.kotlinova.navigation.screens.Screen
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.Uuid
-
-@Stable
-fun interface CheckTokenFun {
-   suspend operator fun invoke(token: WebservicesToken): Boolean
-}
 
 @Stable
 @InjectNavigationScreen
@@ -90,16 +83,19 @@ class WebservicesAuthScreen(
       val initialToken = viewModel.startAuthToken.collectAsStateWithLifecycleAndBlinkingPrevention().value ?: Outcome.Progress()
 
       LaunchedEffect(key.bootUuid) {
+         // Used instead of onServiceRegistered because this needs to run whenever the key's UUID changes, which signals a
+         // refresh.
          viewModel.loadFromBootUrl()
       }
 
       WebservicesAuthScreenContent(
          tokens,
          initialToken,
+         viewModel.token.collectAsStateWithLifecycle().value,
          sources = viewModel.sources.collectAsStateWithLifecycle(null).value,
          authenticate = viewModel::authenticate,
          deauthenticate = viewModel::deauthenticate,
-         checkToken = viewModel::canAuthenticate
+         makeToken = viewModel::makeToken,
       )
    }
 }
@@ -108,13 +104,14 @@ class WebservicesAuthScreen(
 private fun WebservicesAuthScreenContent(
    tokens: Map<Uuid, WebservicesToken>,
    initialToken: Outcome<ParsedWebservicesToken?>,
+   token: Outcome<WebservicesToken>,
    sources: List<AppstoreSource>?,
    authenticate: (WebservicesToken) -> Unit,
    deauthenticate: (WebservicesToken) -> Unit,
-   checkToken: CheckTokenFun,
+   makeToken: (WebservicesToken) -> Unit,
 ) {
-   var setupDialogData: ParsedWebservicesToken? by remember { mutableStateOf(null) }
-   var setupDialogShown by remember { mutableStateOf(false) }
+   var setupDialogData by remember { mutableStateOf(if (initialToken is Outcome.Success) initialToken.data else null) }
+   var setupDialogShown by remember { mutableStateOf(if (initialToken is Outcome.Success) initialToken.data != null else false) }
    ProgressErrorSuccessScaffold(initialToken) { initialTokenData ->
       LaunchedEffect(initialTokenData) {
          if (initialTokenData != null) {
@@ -199,9 +196,8 @@ private fun WebservicesAuthScreenContent(
                         },
                         contentPadding = PaddingValues(8.dp),
                         colors = ButtonDefaults.buttonColors(
-                           containerColor = MaterialTheme.colorScheme.primary,
-                           contentColor = MaterialTheme.colorScheme.onPrimary
-                        )
+                           containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary
+                        ),
                      ) {
                         Icon(
                            painterResource(R.drawable.ic_deauth),
@@ -226,13 +222,14 @@ private fun WebservicesAuthScreenContent(
             tokens,
             setupDialogData,
             sources,
+            token,
             onDismissed = { setupDialogShown = false },
             onSubmitted = {
                setupDialogShown = false
                authenticate(it)
             },
             {
-               checkToken(it)
+               makeToken(it)
             },
          )
       }
@@ -245,30 +242,22 @@ fun ManualSetupDialog(
    tokens: Map<Uuid, WebservicesToken>,
    initialValues: ParsedWebservicesToken?,
    sources: List<AppstoreSource>,
+   token: Outcome<WebservicesToken>,
    onDismissed: () -> Unit,
    onSubmitted: (WebservicesToken) -> Unit,
-   checkToken: CheckTokenFun,
+   makeToken: (WebservicesToken) -> Unit,
    modifier: Modifier = Modifier,
 ) {
    var appstoreSource by remember { mutableStateOf(initialValues?.sourceId?.let { source -> sources.find { it.id == source } }) }
    var bootUrl by remember { mutableStateOf(initialValues?.bootUrl.orEmpty()) }
-   var apiToken by remember {
-      mutableStateOf(
-         initialValues?.token.orEmpty()
-      )
+   var apiToken by remember { mutableStateOf(initialValues?.token.orEmpty()) }
+
+   LaunchedEffect(appstoreSource?.id, bootUrl, apiToken) {
+      // Debounce a bit.
+      delay(100.milliseconds)
+      appstoreSource?.id?.let { makeToken(WebservicesToken(it, bootUrl, apiToken)) }
    }
-   val token by remember {
-      snapshotFlow { Triple(appstoreSource, bootUrl, apiToken) }.transformLatest { (source, bootUrl, apiToken) ->
-         emit(Outcome.Progress())
-         if (source != null) {
-            // Debounce a bit.
-            delay(100.milliseconds)
-            emit(Outcome.Success(WebservicesToken(source.id, bootUrl, apiToken).takeIf { checkToken(it) }))
-         } else {
-            emit(Outcome.Success(null))
-         }
-      }
-   }.collectAsStateWithLifecycle(Outcome.Progress())
+
    AlertDialog(
       onDismissRequest = onDismissed,
       title = {
@@ -278,9 +267,14 @@ fun ManualSetupDialog(
          if (token is Outcome.Progress) {
             CircularProgressIndicator()
          } else {
+            val isSuccess = token is Outcome.Success
             TextButton(
-               onClick = { token.data?.let { onSubmitted(it) } },
-               enabled = token.data != null,
+               onClick = {
+                  if (isSuccess) {
+                     onSubmitted(token.data)
+                  }
+               },
+               enabled = isSuccess,
             ) {
                Text(stringResource(ok))
             }
@@ -335,10 +329,12 @@ internal fun WebservicesAuthScreenContentNoTokensPreview() {
       WebservicesAuthScreenContent(
          emptyMap(),
          Outcome.Success(null),
+         Outcome.Error(InvalidTokenException()),
          AppstoreSourceService.defaultSources,
          authenticate = {},
-         {}
-      ) { true }
+         deauthenticate = {},
+         makeToken = {},
+      )
    }
 }
 
@@ -352,14 +348,34 @@ internal fun WebservicesAuthScreenContentWithTokensPreview() {
          mapOf(
             sourceId to WebservicesToken(
                sourceId = sourceId,
-               bootUrl = "TODO()",
-               token = "",
+               bootUrl = "whatever",
+               token = "my token",
             )
          ),
          Outcome.Success(null),
+         Outcome.Error(InvalidTokenException()),
          AppstoreSourceService.defaultSources,
          authenticate = {},
-         {}
-      ) { true }
+         deauthenticate = {},
+         makeToken = {},
+      )
+   }
+}
+
+@FullScreenPreviews
+@Composable
+@ShowkaseComposable(group = "Test")
+internal fun WebservicesAuthScreenContentWithInitialTokenPreview() {
+   PreviewTheme {
+      val sourceId = AppstoreSourceService.defaultSources.first().id
+      WebservicesAuthScreenContent(
+         emptyMap(),
+         Outcome.Success(ParsedWebservicesToken(sourceId, "whatever", "my token")),
+         Outcome.Error(InvalidTokenException()),
+         AppstoreSourceService.defaultSources,
+         authenticate = {},
+         deauthenticate = {},
+         makeToken = {},
+      )
    }
 }
